@@ -12,7 +12,10 @@ var app = express();
 var port = process.env.PORT || 3000;
 
 /** this project needs a db !! **/ 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 app.use(cors());
 
@@ -21,6 +24,21 @@ app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use('/public', express.static(process.cwd() + '/public'));
 
+
+const shortUrlSchema = new mongoose.Schema({
+  shortCode: {type: Number, required: true, unique: true},
+  url: {type: String, required: true}
+});
+
+const ShortURL = mongoose.model("ShortURL",shortUrlSchema);
+
+var createNewURL = function(url, done)
+{
+  var genShortCode = ShortURL.find().length+1;
+  var newURL = new ShortURL({
+    shortCode: getShortCode,
+    url: url
+  })
 app.get('/', function(req, res){
   res.sendFile(process.cwd() + '/views/index.html');
 });
