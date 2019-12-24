@@ -93,18 +93,15 @@ app.post("/api/shorturl/new", function(req, res) {
   }
 });
 
-app.get("/api/shorturl/:short_url_code", function(req, res) {
-  ShortURL.findOne({ code: req.params.short_url_code }, function(
-    err,
-    urlFound
-  ) {
+app.get("/api/shorturl/:short", function(req, res) {
+  ShortURL.find({ code: req.params.short }, function(err, urlFound) {
     if (err) {
       console.log("error loading database: " + err);
       res.send("Url not found error");
-    } else if (urlFound != null) {
-      res.redirect(urlFound.original_url);
+    } else if (urlFound[0] != null) {
+      res.redirect(urlFound[0].original_url);
     } else {
-      console.log(urlFound, req.params.short_url_code);
+      console.log(urlFound[0], req.params.short);
       res.send("Url not found unknown");
     }
   });
