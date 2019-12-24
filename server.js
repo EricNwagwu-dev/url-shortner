@@ -56,12 +56,20 @@ app.get("/api/hello", function(req, res) {
 });
 
 app.post("/api/shorturl/new", function(req, res) {
-  dns.lookup(req.body.url, function(err, address) {
+  createNewUrl(req.body.url);
+  
+  ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
+        if (err) {
+          console.log("It didn't save the url from earlier");
+        } else {
+          console.log(urlFound);
+          res.json({ original_url: urlFound.url, short_url: urlFound._id });
+  /*dns.lookup(req.body.url, function(err, address) {
     //console.log(err);
     if (err.code !== "ENOTFOUND") {
       res.json({ error: "invalid URL" });
     } else {
-      /*createNewUrl(req.body.url);
+      createNewUrl(req.body.url);
       ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
         if (err) {
           console.log("It didn't save the url from earlier");
@@ -69,10 +77,9 @@ app.post("/api/shorturl/new", function(req, res) {
           console.log(urlFound);
           res.json({ original_url: urlFound.url, short_url: urlFound._id });
         }*/
-      res.send(err);
     }
-  });
-});
+  //});
+);
 
 app.listen(port, function() {
   console.log("Node.js listening ...");
