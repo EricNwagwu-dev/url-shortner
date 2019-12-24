@@ -5,9 +5,8 @@ var mongo = require("mongodb");
 var mongoose = require("mongoose");
 var dns = require("dns");
 var cors = require("cors");
-
+var crypto = require("crypto-js");
 var app = express();
-var ObjectId = require('mongoose').Types.ObjectId; 
       
 
 
@@ -30,7 +29,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/public", express.static(process.cwd() + "/public"));
 
 const shortUrlSchema = new mongoose.Schema({
-  url: { type: String, required: true }
+  url: { type: String, required: true },
+  code: {type: String, require: true}
 });
 
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
@@ -68,7 +68,8 @@ app.post("/api/shorturl/new", function(req, res) {
               res.json({ original_url: urlFound.url, short_url: urlFound._id });
             } else {
               var newURL = new ShortURL({
-                url: req.body.url
+                url: req.body.url,
+                code: crypto.SHA256(req.body.url)
               });
               newURL.save(function(err, urlSaved) {
                 if (err) {
@@ -76,7 +77,7 @@ app.post("/api/shorturl/new", function(req, res) {
                 } else {
                   res.json({
                     original_url: urlSaved.url,
-                    short_url: urlSaved._id
+                    short_url: urlSaved.code
                   });
                 }
               });
@@ -93,8 +94,7 @@ app.post("/api/shorturl/new", function(req, res) {
 });
 
 app.get("/api/shorturl/:short_url_code", function(req, res) {
-  var o_id = new ObjectId(req.params.short_url_code+"");
-  ShortURL.findById({ "_id": o_id }, function(
+  ShortURL.findOne({ code: req.params.short_url_code }, function(
     err,
     urlFound
   ) {
