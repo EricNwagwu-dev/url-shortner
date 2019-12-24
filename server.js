@@ -7,6 +7,10 @@ var dns = require("dns");
 var cors = require("cors");
 
 var app = express();
+var ObjectId = require('mongoose').Types.ObjectId; 
+      
+
+
 
 // Basic Configuration
 var port = process.env.PORT || 3000;
@@ -89,7 +93,8 @@ app.post("/api/shorturl/new", function(req, res) {
 });
 
 app.get("/api/shorturl/:short_url_code", function(req, res) {
-  ShortURL.findById({ _id: mongoose.Types.ObjectId(req.params.short_url_code) }, function(
+  var o_id = new ObjectId(req.params.short_url_code+"");
+  ShortURL.findById({ "_id": o_id }, function(
     err,
     urlFound
   ) {
