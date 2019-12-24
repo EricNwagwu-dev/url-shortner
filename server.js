@@ -31,38 +31,9 @@ const shortUrlSchema = new mongoose.Schema({
 
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
 
-var createNewUrl = function(url) {
-  var newURL = new ShortURL({
-    url: url
-  });
-  console.log("This the new url object that was created: " + newURL);
-  newURL.save(function(err, urlSaved) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(
-        "This is the url object that was saved to the database: " + urlSaved
-      );
-      return findUrlGivenString(url);
-    }
-  });
-};
+var createNewUrl = function(url) {};
 
-var findUrlGivenString = function(url) {
-  ShortURL.findOne({ url: url }, function(err, urlFound) {
-    if (err) {
-      console.log("It didn't save the url from earlier");
-    } else {
-      console.log(
-        "We searched for the url in the database and found this object: " +
-          urlFound
-      );
-      if (urlFound !== null) {
-        return { original_url: urlFound.url, short_url: urlFound._id };
-      }
-    }
-  });
-};
+var findUrlGivenString = function(url) {};
 
 app.get("/", function(req, res) {
   console.log(mongoose.connection.readyState);
@@ -85,9 +56,29 @@ app.post("/api/shorturl/new", function(req, res) {
   ) {
     dns.lookup(validateUrl[1], (err, add, fam) => {
       if (err === null) {
-        var brother = "me";
-        console.log(brother);
-        res.send("work in progress");
+        ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
+          if (err) {
+            console.log("Error loading database");
+          } else {
+            if (urlFound !== null) {
+              res.json({ original_url: urlFound.url, short_url: urlFound._id });
+            } else {
+              var newURL = new ShortURL({
+                url: req.body.url
+              });
+              newURL.save(function(err, urlSaved) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  res.json({
+                    original_url: urlSaved.url,
+                    short_url: urlSaved._id
+                  });
+                }
+              });
+            }
+          }
+        });
       } else {
         res.json({ error: "invalid URL" });
       }
@@ -95,6 +86,21 @@ app.post("/api/shorturl/new", function(req, res) {
   } else {
     res.json({ error: "invalid URL" });
   }
+});
+
+app.get("/api/shorturl/:short_url_code", function(req, res) {
+  console.log(req.params.short_url_code);
+  ShortURL.findOne({ _id: req.params.short_url_code }, function(err, urlFound) {
+    if (err) {
+      console.log("error loading database: " + err);
+      res.send("Url not found");
+    }
+    if (urlFound != null) {
+      res.redirect(urlFound.original_url);
+    } else {
+      res.send("Url not found");
+    }
+  });
 });
 /*dns.lookup(req.body.url, function(err, address) {
     //console.log(err);
