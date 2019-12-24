@@ -77,8 +77,7 @@ app.get("/api/hello", function(req, res) {
 app.post("/api/shorturl/new", function(req, res) {
   let validateUrl = req.body.url.split("://");
   console.log(validateUrl);
-  var check = false;
-  var adde = ";";
+  let check = false;
   if (
     validateUrl.length == 2 &&
     (validateUrl[0].toLowerCase() === "https" ||
@@ -88,10 +87,10 @@ app.post("/api/shorturl/new", function(req, res) {
       if (add != undefined) {
         check = true;
       }
-      adde = add;
-      console.log(err, add, fam);
+      var brother = "me";
+      console.log(brother, err);
     });
-    console.log(adde);
+
     if (check) {
       res.send("work in progress");
       /*
