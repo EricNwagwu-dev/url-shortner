@@ -35,12 +35,14 @@ var createNewUrl = function(url) {
   var newURL = new ShortURL({
     url: url
   });
-  console.log(newURL);
+  console.log("This the new url object that was created: " + newURL);
   newURL.save(function(err, urlSaved) {
     if (err) {
       console.log(err);
     } else {
-      console.log(urlSaved);
+      console.log(
+        "This is the url object that was saved to the database: " + urlSaved
+      );
     }
   });
 };
@@ -57,14 +59,21 @@ app.get("/api/hello", function(req, res) {
 
 app.post("/api/shorturl/new", function(req, res) {
   createNewUrl(req.body.url);
-  
   ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
-        if (err) {
-          console.log("It didn't save the url from earlier");
-        } else {
-          console.log(urlFound);
-          res.json({ original_url: urlFound.url, short_url: urlFound._id });
-  /*dns.lookup(req.body.url, function(err, address) {
+    if (err) {
+      console.log("It didn't save the url from earlier");
+    } else {
+      console.log(
+        "We searched for the url in the database and found this object: " +
+          urlFound
+      );
+      if (urlFound !== null) {
+        res.json({ original_url: urlFound.url, short_url: urlFound._id });
+      }
+    }
+  });
+});
+/*dns.lookup(req.body.url, function(err, address) {
     //console.log(err);
     if (err.code !== "ENOTFOUND") {
       res.json({ error: "invalid URL" });
@@ -77,9 +86,8 @@ app.post("/api/shorturl/new", function(req, res) {
           console.log(urlFound);
           res.json({ original_url: urlFound.url, short_url: urlFound._id });
         }*/
-    }
-  //});
-);
+
+//});
 
 app.listen(port, function() {
   console.log("Node.js listening ...");
