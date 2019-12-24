@@ -75,20 +75,23 @@ app.get("/api/hello", function(req, res) {
 });
 
 app.post("/api/shorturl/new", function(req, res) {
-  let validateUrl = req.body.url.split(":");
+  let validateUrl = req.body.url.split("://");
   console.log(validateUrl);
-  let check = false;
+  var check = false;
+  var adde = ";";
   if (
     validateUrl.length == 2 &&
     (validateUrl[0].toLowerCase() === "https" ||
       validateUrl[0].toLowerCase() === "http")
   ) {
     dns.lookup(validateUrl[1], (err, add, fam) => {
-      if (add != null) {
+      if (add != undefined) {
         check = true;
       }
+      adde = add;
       console.log(err, add, fam);
     });
+    console.log(adde);
     if (check) {
       res.send("work in progress");
       /*
