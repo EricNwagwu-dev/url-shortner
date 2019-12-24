@@ -43,9 +43,28 @@ var createNewUrl = function(url) {
       console.log(
         "This is the url object that was saved to the database: " + urlSaved
       );
+      return findUrlGivenString(url);
     }
   });
 };
+
+
+var findUrlGivenString = function(url)
+{
+   ShortURL.findOne({ url: url }, function(err, urlFound) {
+    if (err) {
+      console.log("It didn't save the url from earlier");
+    } else {
+      console.log(
+        "We searched for the url in the database and found this object: " +
+          urlFound
+      );
+      if (urlFound !== null) {
+        return({ original_url: urlFound.url, short_url: urlFound._id });
+      }
+    }
+  });
+}
 
 app.get("/", function(req, res) {
   console.log(mongoose.connection.readyState);
@@ -58,20 +77,8 @@ app.get("/api/hello", function(req, res) {
 });
 
 app.post("/api/shorturl/new", function(req, res) {
-  createNewUrl(req.body.url);
-  ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
-    if (err) {
-      console.log("It didn't save the url from earlier");
-    } else {
-      console.log(
-        "We searched for the url in the database and found this object: " +
-          urlFound
-      );
-      if (urlFound !== null) {
-        res.json({ original_url: urlFound.url, short_url: urlFound._id });
-      }
-    }
-  });
+  res.json(createNewUrl(req.body.url));
+  
 });
 /*dns.lookup(req.body.url, function(err, address) {
     //console.log(err);
