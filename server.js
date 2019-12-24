@@ -31,17 +31,20 @@ const shortUrlSchema = new mongoose.Schema({
 
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
 
-var createNewURL = function(url) {
+var createNewShortURL = function(done)
+{
   var newURL = new ShortURL({
-    url: url
-  });
-  newURL.save(function(err, urlSaved) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(urlSaved);
-    }
-  });
+        url: req.body.url
+      });
+      console.log(newURL);
+      newURL.save(function(err, urlSaved, done) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(urlSaved);
+           done(null,urlSaved);
+        }
+      });
 };
 
 app.get("/", function(req, res) {
@@ -55,20 +58,18 @@ app.get("/api/hello", function(req, res) {
 
 app.post("/api/shorturl/new", function(req, res) {
   dns.lookup(req.body.url, function(err, address) {
-    console.log(err);
+    //console.log(err);
     if (err.code !== "ENOTFOUND") {
       res.json({ error: "invalid URL" });
     } else {
-      createNewURL(req.body.url);
-      ShortURL.findOne({url: req.body.url}, function(err, urlFound){
-        if(err)
-          {
-            console.log("It didn't save the url from earlier")
+      
+      ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
+        if (err) {
+          console.log("It didn't save the url from earlier");
+        } else {
+          res.json({ original_url: urlFound.url, short_url: urlFound._id });
         }
-        else{
-          res.json({"original_url": urlFound.url, "short_url": urlFound._id})
-        }
-      })
+      });
     }
   });
 });
