@@ -31,7 +31,9 @@ const shortUrlSchema = new mongoose.Schema({
 
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
 
+var createNewUrl = function(url) {
 
+};
 
 app.get("/", function(req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
@@ -42,20 +44,37 @@ app.get("/api/hello", function(req, res) {
   res.json({ greeting: "hello API" });
 });
 
-app.post("/api/shorturl/new", function(req, res, next) {
-  dns.lookup(req.body.url, function(err, address) {
-    //console.log(err);
-    if (err.code !== "ENOTFOUND") {
-      res.json({ error: "invalid URL" });
+app.post(
+  "/api/shorturl/new",
+  function(req, res, next) {
+    dns.lookup(req.body.url, function(err, address) {
+      //console.log(err);
+      if (err.code !== "ENOTFOUND") {
+        res.json({ error: "invalid URL" });
+      } else {
+        (new ShortURL({
+    url: req.body.url
+  })).save(function(err, urlSaved) {
+    if (err) {
+      console.log(err);
     } else {
-      var newURL = new ShortURL({
-        url: req.body.url
-      });
-      console.log(newURL);
-      next();
+      console.log(urlSaved);
     }
   });
-});
+        next();
+      }
+    });
+  },
+  function(req, res) {
+    ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
+      if (err) {
+        console.log("It didn't save the url from earlier");
+      } else {
+        res.json({ original_url: urlFound.url, short_url: urlFound._id });
+      }
+    });
+  }
+);
 
 app.listen(port, function() {
   console.log("Node.js listening ...");
