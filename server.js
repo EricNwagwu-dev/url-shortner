@@ -32,7 +32,17 @@ const shortUrlSchema = new mongoose.Schema({
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
 
 var createNewUrl = function(url) {
-
+  var newURL = new ShortURL({
+    url: url
+  });
+  console.log(newURL);
+  newURL.save(function(err, urlSaved) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(urlSaved);
+    }
+  });
 };
 
 app.get("/", function(req, res) {
@@ -44,37 +54,24 @@ app.get("/api/hello", function(req, res) {
   res.json({ greeting: "hello API" });
 });
 
-app.post(
-  "/api/shorturl/new",
-  function(req, res, next) {
-    dns.lookup(req.body.url, function(err, address) {
-      //console.log(err);
-      if (err.code !== "ENOTFOUND") {
-        res.json({ error: "invalid URL" });
-      } else {
-        (new ShortURL({
-    url: req.body.url
-  })).save(function(err, urlSaved) {
-    if (err) {
-      console.log(err);
+app.post("/api/shorturl/new", function(req, res, next) {
+  dns.lookup(req.body.url, function(err, address) {
+    //console.log(err);
+    if (err.code !== "ENOTFOUND") {
+      res.json({ error: "invalid URL" });
     } else {
-      console.log(urlSaved);
+      createNewUrl(req.body.url);
+      ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
+        if (err) {
+          console.log("It didn't save the url from earlier");
+        } else {
+          console.log(urlFound);
+          res.json({ original_url: urlFound.url, short_url: urlFound._id });
+        }
+      });
     }
   });
-        next();
-      }
-    });
-  },
-  function(req, res) {
-    ShortURL.findOne({ url: req.body.url }, function(err, urlFound) {
-      if (err) {
-        console.log("It didn't save the url from earlier");
-      } else {
-        res.json({ original_url: urlFound.url, short_url: urlFound._id });
-      }
-    });
-  }
-);
+});
 
 app.listen(port, function() {
   console.log("Node.js listening ...");
