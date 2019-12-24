@@ -48,7 +48,6 @@ app.get("/api/hello", function(req, res) {
 
 app.post("/api/shorturl/new", function(req, res) {
   let validateUrl = req.body.url.split("://");
-  console.log(validateUrl);
   let check = false;
   if (
     validateUrl.length == 2 &&
@@ -93,15 +92,18 @@ app.post("/api/shorturl/new", function(req, res) {
   }
 });
 
-app.get("/api/shorturl/:short", function(req, res) {
-  ShortURL.find({ code: req.params.short }, function(err, urlFound) {
+app.get("/api/shorturl/:code", function(req, res) {
+  console.log(req.params);
+  ShortURL.findOne({ code: req.params.code }, function(err, urlFound) {
+    console.log(req.params);
     if (err) {
       console.log("error loading database: " + err);
       res.send("Url not found error");
-    } else if (urlFound[0] != null) {
-      res.redirect(urlFound[0].original_url);
+    }
+    if (urlFound !== null) {
+      res.redirect(urlFound.original_url);
     } else {
-      console.log(urlFound[0], req.params.short);
+      console.log(urlFound, req.params.code);
       res.send("Url not found unknown");
     }
   });
