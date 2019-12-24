@@ -48,10 +48,8 @@ var createNewUrl = function(url) {
   });
 };
 
-
-var findUrlGivenString = function(url)
-{
-   ShortURL.findOne({ url: url }, function(err, urlFound) {
+var findUrlGivenString = function(url) {
+  ShortURL.findOne({ url: url }, function(err, urlFound) {
     if (err) {
       console.log("It didn't save the url from earlier");
     } else {
@@ -60,11 +58,11 @@ var findUrlGivenString = function(url)
           urlFound
       );
       if (urlFound !== null) {
-        return({ original_url: urlFound.url, short_url: urlFound._id });
+        return { original_url: urlFound.url, short_url: urlFound._id };
       }
     }
   });
-}
+};
 
 app.get("/", function(req, res) {
   console.log(mongoose.connection.readyState);
@@ -77,8 +75,41 @@ app.get("/api/hello", function(req, res) {
 });
 
 app.post("/api/shorturl/new", function(req, res) {
-  res.json(createNewUrl(req.body.url));
-  
+  let validateUrl = req.body.url.split(":");
+  console.log(validateUrl);
+  let check = false;
+  if (
+    validateUrl.length == 2 &&
+    (validateUrl[0].toLowerCase() === "https" ||
+      validateUrl[0].toLowerCase() === "http")
+  ) {
+    dns.lookup(validateUrl[1], (err, add, fam) => {
+      if (add != null) {
+        check = true;
+      }
+      console.log(err, add, fam);
+    });
+    if (check) {
+      res.send("work in progress");
+      /*
+            //find in database
+            if(found)
+            {
+                //retrieve and find json
+            }
+            else
+            {
+                //create new unique key
+                //store new object in database
+                //return json
+            }
+            */
+    } else {
+      res.json({ error: "invalid URL" });
+    }
+  } else {
+    res.json({ error: "invalid URL" });
+  }
 });
 /*dns.lookup(req.body.url, function(err, address) {
     //console.log(err);
