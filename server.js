@@ -84,31 +84,14 @@ app.post("/api/shorturl/new", function(req, res) {
       validateUrl[0].toLowerCase() === "http")
   ) {
     dns.lookup(validateUrl[1], (err, add, fam) => {
-      if (add != undefined) {
-        check = true;
+      if (err === null) {
+        var brother = "me";
+        console.log(brother);
+        res.send("work in progress");
+      } else {
+        res.json({ error: "invalid URL" });
       }
-      var brother = "me";
-      console.log(brother, err);
     });
-
-    if (check) {
-      res.send("work in progress");
-      /*
-            //find in database
-            if(found)
-            {
-                //retrieve and find json
-            }
-            else
-            {
-                //create new unique key
-                //store new object in database
-                //return json
-            }
-            */
-    } else {
-      res.json({ error: "invalid URL" });
-    }
   } else {
     res.json({ error: "invalid URL" });
   }
