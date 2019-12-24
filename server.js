@@ -7,9 +7,6 @@ var dns = require("dns");
 var cors = require("cors");
 var crypto = require("crypto-js");
 var app = express();
-      
-
-
 
 // Basic Configuration
 var port = process.env.PORT || 3000;
@@ -30,7 +27,7 @@ app.use("/public", express.static(process.cwd() + "/public"));
 
 const shortUrlSchema = new mongoose.Schema({
   url: { type: String, required: true },
-  code: {type: String, require: true}
+  code: { type: String, required: true }
 });
 
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
@@ -65,7 +62,10 @@ app.post("/api/shorturl/new", function(req, res) {
             console.log("Error loading database");
           } else {
             if (urlFound !== null) {
-              res.json({ original_url: urlFound.url, short_url: urlFound._id });
+              res.json({
+                original_url: urlFound.url,
+                short_url: urlFound.code
+              });
             } else {
               var newURL = new ShortURL({
                 url: req.body.url,
@@ -104,6 +104,7 @@ app.get("/api/shorturl/:short_url_code", function(req, res) {
     } else if (urlFound != null) {
       res.redirect(urlFound.original_url);
     } else {
+      console.log(urlFound, req.params.short_url_code);
       res.send("Url not found unknown");
     }
   });
