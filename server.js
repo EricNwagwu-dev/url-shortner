@@ -26,16 +26,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/public", express.static(process.cwd() + "/public"));
 
 const shortUrlSchema = new mongoose.Schema({
-  shortCode: { type: Number, required: true, unique: true },
   url: { type: String, required: true }
 });
 
 const ShortURL = mongoose.model("ShortURL", shortUrlSchema);
 
-var createNewURL = function(url, done) {
-  var genShortCode = ShortURL.find().length + 1;
+var createNewURL = function(url) {
   var newURL = new ShortURL({
-    shortCode: getShortCode,
     url: url
   });
   newURL.save(function(err, urlSaved) {
@@ -43,10 +40,10 @@ var createNewURL = function(url, done) {
       console.log(err);
     } else {
       console.log(urlSaved);
-      done(null, urlSaved);
     }
   });
 };
+
 app.get("/", function(req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
 });
@@ -57,13 +54,22 @@ app.get("/api/hello", function(req, res) {
 });
 
 app.post("/api/shorturl/new", function(req, res) {
-  dns.lookup(req.body.url, function(err, address){
-    if(err.code ==="ENOTFOUND")
-      {
-        console.log(err.code);
-        console.log(req.body.url);
-        res.json({"error": "invalid URL"});
-      }
+  dns.lookup(req.body.url, function(err, address) {
+    console.log(err);
+    if (err.code !== "ENOTFOUND") {
+      res.json({ error: "invalid URL" });
+    } else {
+      createNewURL(req.body.url);
+      ShortURL.findOne({url: req.body.url}, function(err, urlFound){
+        if(err)
+          {
+            console.log("It didn't save the url from earlier")
+        }
+        else{
+          res.json({"original_url": urlFound.url, "short_url": urlFound._id})
+        }
+      })
+    }
   });
 });
 
