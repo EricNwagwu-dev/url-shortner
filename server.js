@@ -89,16 +89,17 @@ app.post("/api/shorturl/new", function(req, res) {
 });
 
 app.get("/api/shorturl/:short_url_code", function(req, res) {
-  console.log(req.params.short_url_code);
-  ShortURL.findOne({ _id: req.params.short_url_code }, function(err, urlFound) {
+  ShortURL.findById({ _id: mongoose.Types.ObjectId(req.params.short_url_code) }, function(
+    err,
+    urlFound
+  ) {
     if (err) {
       console.log("error loading database: " + err);
-      res.send("Url not found");
-    }
-    if (urlFound != null) {
+      res.send("Url not found error");
+    } else if (urlFound != null) {
       res.redirect(urlFound.original_url);
     } else {
-      res.send("Url not found");
+      res.send("Url not found unknown");
     }
   });
 });
